@@ -47,10 +47,12 @@ export function computeAvailability(
       const s = parseDateTime(p['Start']);
       const e = parseDateTime(p['End']);
       if (!field || !s || !e) continue;
-      if (/cancel|denied|withdraw/i.test(status)) continue;
+      // Track the field/sport regardless of status so it appears in the pool.
       allFields.add(field);
       if (!fieldsBySport.has(sport)) fieldsBySport.set(sport, new Set());
       fieldsBySport.get(sport)!.add(field);
+      // Only cancelled/denied/withdrawn permits don't block the slot.
+      if (/cancel|denied|withdraw/i.test(status)) continue;
       permitIntervals.push({ field, start: s, end: e });
     }
 
