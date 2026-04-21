@@ -71,4 +71,27 @@ describe('parseDateTime', () => {
     const d2 = parseDateTime('04/28/2025 02:00 PM');
     expect(d1!.getTime()).toBe(d2!.getTime());
   });
+
+  // Real NYC Parks CSV format uses dotted lowercase: "3/17/2026 3:00 p.m."
+  it('parses dotted lowercase p.m.', () => {
+    const d = parseDateTime('3/17/2026 3:00 p.m.');
+    expect(d!.getFullYear()).toBe(2026);
+    expect(d!.getMonth()).toBe(2); // March
+    expect(d!.getDate()).toBe(17);
+    expect(d!.getHours()).toBe(15);
+    expect(d!.getMinutes()).toBe(0);
+  });
+
+  it('parses dotted lowercase a.m.', () => {
+    const d = parseDateTime('3/17/2026 9:00 a.m.');
+    expect(d!.getHours()).toBe(9);
+  });
+
+  it('parses 12:00 p.m. as noon', () => {
+    expect(parseDateTime('4/25/2026 12:00 p.m.')!.getHours()).toBe(12);
+  });
+
+  it('parses 12:00 a.m. as midnight', () => {
+    expect(parseDateTime('4/25/2026 12:00 a.m.')!.getHours()).toBe(0);
+  });
 });

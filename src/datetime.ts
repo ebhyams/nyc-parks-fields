@@ -3,17 +3,18 @@
 export function parseDateTime(s: string): Date | null {
   if (!s) return null;
 
-  // "MM/DD/YYYY HH:MM[:SS] [AM|PM]"
+  // "MM/DD/YYYY HH:MM[:SS] [AM|PM|a.m.|p.m.]"
+  // Real CSV format uses lowercase dotted form: "3/17/2026 3:00 p.m."
   let m = s.match(
-    /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i,
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::\d{2})?\s*(a\.?m\.?|p\.?m\.?)?$/i,
   );
   if (m) {
     const [, mo, dd, yy, , mi, ap] = m;
     let h = +m[4];
     if (ap) {
-      const up = ap.toUpperCase();
-      if (up === 'PM' && h < 12) h += 12;
-      if (up === 'AM' && h === 12) h = 0;
+      const norm = ap.replace(/\./g, '').toUpperCase(); // "p.m." → "PM"
+      if (norm === 'PM' && h < 12) h += 12;
+      if (norm === 'AM' && h === 12) h = 0;
     }
     return new Date(+yy, +mo - 1, +dd, h, +mi);
   }
