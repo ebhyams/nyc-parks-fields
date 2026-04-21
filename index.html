@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC Parks Field &amp; Court Availability</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    background: #f5f7f5;
+    color: #1a1a1a;
+    line-height: 1.4;
+  }
+  header {
+    background: #2d5a2d;
+    color: white;
+    padding: 1rem 1.5rem;
+  }
+  header h1 { margin: 0; font-size: 1.25rem; }
+  header p { margin: .25rem 0 0; opacity: .85; font-size: .82rem; }
+  .container { max-width: 960px; margin: 0 auto; padding: 1rem 1.25rem 3rem; }
+  .filters {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .75rem 1rem;
+    align-items: end;
+  }
+  .filters label {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    font-size: .82rem;
+    color: #555;
+  }
+  .filters select,
+  .filters input {
+    padding: .5rem .55rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: .95rem;
+    background: white;
+    font-family: inherit;
+  }
+  .filters input:invalid { border-color: #c33; }
+  .filters button {
+    background: #2d5a2d;
+    color: white;
+    border: 0;
+    padding: .55rem 1rem;
+    font-size: .95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    height: 38px;
+  }
+  .filters button:disabled { opacity: .45; cursor: not-allowed; }
+  .filters button:hover:not(:disabled) { background: #1e3f1e; }
+  .warning {
+    background: #fff4d4;
+    border: 1px solid #e6c200;
+    border-radius: 4px;
+    padding: .5rem .75rem;
+    font-size: .83rem;
+    grid-column: 1 / -1;
+  }
+  .status {
+    margin: .5rem 0 .75rem;
+    font-size: .88rem;
+    color: #555;
+  }
+  .progress {
+    background: #e0e0e0;
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+    margin-top: .35rem;
+  }
+  .progress-bar {
+    background: #2d5a2d;
+    height: 100%;
+    transition: width .15s;
+  }
+  .day-group {
+    margin-bottom: 1.75rem;
+  }
+  .day-heading {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d5a2d;
+    margin: 0 0 .5rem;
+    padding-bottom: .3rem;
+    border-bottom: 2px solid #2d5a2d;
+  }
+  .slot-list { padding: 0; margin: 0; list-style: none; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .slot-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 120px 120px;
+    gap: 1rem;
+    padding: .55rem .85rem;
+    border-bottom: 1px solid #eee;
+    font-size: .92rem;
+    align-items: center;
+  }
+  .slot-row:last-child { border-bottom: 0; }
+  .slot-time { font-variant-numeric: tabular-nums; font-weight: 500; color: #333; }
+  .slot-park { color: #1a1a1a; }
+  .slot-borough { color: #666; font-size: .85rem; }
+  .slot-count { color: #2d5a2d; font-weight: 500; font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }
+  .empty {
+    text-align: center;
+    padding: 2rem;
+    color: #888;
+    background: white;
+    border-radius: 6px;
+  }
+  .error {
+    background: #fdd;
+    border: 1px solid #c33;
+    padding: .6rem .75rem;
+    border-radius: 4px;
+    font-size: .88rem;
+    color: #700;
+  }
+  .no-day {
+    color: #888; font-size: .85rem; padding: .5rem 0;
+  }
+  @media (max-width: 640px) {
+    .slot-row { grid-template-columns: 85px 1fr 90px; }
+    .slot-count { grid-column: 2 / -1; text-align: left; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>NYC Parks Field &amp; Court Availability</h1>
+  <p>Operating window 6:00&nbsp;AM – 11:00&nbsp;PM · 1-hour slots · Data: NYC Parks issued permits + NYC Open Data</p>
+</header>
+<div class="container">
+  <form class="filters" id="filters">
+    <label>
+      Field type
+      <select id="fieldType" name="fieldType"></select>
+    </label>
+    <label>
+      Borough <span style="color:#c33" title="required">*</span>
+      <select id="borough" name="borough" required>
+        <option value="">Select borough…</option>
+        <option value="M">Manhattan</option>
+        <option value="B">Brooklyn</option>
+        <option value="Q">Queens</option>
+        <option value="X">Bronx</option>
+        <option value="R">Staten Island</option>
+        <option value="ALL">All boroughs</option>
+      </select>
+    </label>
+    <label>
+      Start date
+      <input type="date" id="startDate" name="startDate" required>
+    </label>
+    <label>
+      End date
+      <input type="date" id="endDate" name="endDate" required>
+    </label>
+    <button type="submit" id="searchBtn" disabled>Search</button>
+    <div class="warning" id="allWarning" hidden>
+      Heads up: “All boroughs” will fetch CSVs for ~2,000 parks (throttled to 8 concurrent). Expect 1–3 minutes and real load on the NYC Parks server. Use sparingly.
+    </div>
+  </form>
+  <div class="status" id="status">Loading park index…</div>
+  <div id="results"></div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
