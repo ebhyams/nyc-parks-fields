@@ -23,6 +23,7 @@ for (const t of FIELD_TYPES) {
   o.textContent = t;
   fieldTypeSelect.appendChild(o);
 }
+fieldTypeSelect.value = 'Baseball - Adult';
 
 const today = new Date();
 const weekOut = new Date(today);
@@ -37,26 +38,21 @@ boroughSelect.addEventListener('change', () => {
 
 filtersForm.addEventListener('submit', e => { e.preventDefault(); runSearch(); });
 
-// --- Parks index ---
-let parksIndexPromise: Promise<Park[]> | null = null;
+setStatus('Select a borough and hit Search.');
 
-function loadParksIndex(): Promise<Park[]> {
-  if (!parksIndexPromise) {
-    parksIndexPromise = fetchSocrata().catch(err => {
-      parksIndexPromise = null; // clear so the next search retries
+// --- Parks index (cached per borough) ---
+const parksCache = new Map<string, Promise<Park[]>>();
+
+function loadParksIndex(borough: string): Promise<Park[]> {
+  if (!parksCache.has(borough)) {
+    const p = fetchSocrata(borough).catch(err => {
+      parksCache.delete(borough); // allow retry on next search
       throw err;
     });
+    parksCache.set(borough, p);
   }
-  return parksIndexPromise;
+  return parksCache.get(borough)!;
 }
-
-// Preload so first search is snappy
-loadParksIndex()
-  .then(list => setStatus(`${list.length} parks loaded from NYC Open Data. Pick filters and Search.`))
-  .catch(err => {
-    const msg = err instanceof Error ? err.message : String(err);
-    setStatus(`<div class="error">Failed to load park index: ${escapeHtml(msg)}</div>`);
-  });
 
 // --- Search ---
 async function runSearch(): Promise<void> {
@@ -81,8 +77,7 @@ async function runSearch(): Promise<void> {
 
   try {
     setStatus('Loading park index…');
-    const allParks = await loadParksIndex();
-    const parks = borough === 'ALL' ? allParks : allParks.filter(p => p.borough === borough);
+    const parks = await loadParksIndex(borough);
 
     if (parks.length === 0) {
       setStatus('<div class="error">No parks found for that borough in the open-data feed.</div>');

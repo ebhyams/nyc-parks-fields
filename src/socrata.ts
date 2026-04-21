@@ -1,12 +1,12 @@
-import { SOCRATA_URL } from './constants';
+import { SOCRATA_BASE_URL } from './constants';
 import type { Park } from './types';
 
-// Relaxed to [A-Z]* (vs the original [A-Z]?) to avoid silently dropping parks
-// with multi-character code suffixes.
 const PARK_CODE_RE = /^[MQBXR]\d+[A-Z]*$/i;
 
-export async function fetchSocrata(): Promise<Park[]> {
-  const r = await fetch(SOCRATA_URL, { credentials: 'omit' });
+export async function fetchSocrata(borough: string): Promise<Park[]> {
+  const params = new URLSearchParams({ '$limit': '50000' });
+  if (borough !== 'ALL') params.set('$where', `borough='${borough}'`);
+  const r = await fetch(`${SOCRATA_BASE_URL}?${params}`, { credentials: 'omit' });
   if (!r.ok) throw new Error(`Socrata ${r.status}`);
   const rows: Record<string, string>[] = await r.json();
 
