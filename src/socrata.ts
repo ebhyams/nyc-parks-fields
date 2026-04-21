@@ -4,7 +4,10 @@ import type { Park } from './types';
 const PARK_CODE_RE = /^[MQBXR]\d+[A-Z]*$/i;
 
 export async function fetchSocrata(borough: string): Promise<Park[]> {
-  const params = new URLSearchParams({ '$limit': '50000' });
+  const params = new URLSearchParams({
+    '$select': 'cemsparent,gispropnum,name,propertyname,borough,areatype',
+    '$limit': '50000',
+  });
   if (borough !== 'ALL') params.set('$where', `borough='${borough}'`);
   const r = await fetch(`${SOCRATA_BASE_URL}?${params}`, { credentials: 'omit' });
   if (!r.ok) throw new Error(`Socrata ${r.status}`);
