@@ -41,7 +41,12 @@ filtersForm.addEventListener('submit', e => { e.preventDefault(); runSearch(); }
 let parksIndexPromise: Promise<Park[]> | null = null;
 
 function loadParksIndex(): Promise<Park[]> {
-  if (!parksIndexPromise) parksIndexPromise = fetchSocrata();
+  if (!parksIndexPromise) {
+    parksIndexPromise = fetchSocrata().catch(err => {
+      parksIndexPromise = null; // clear so the next search retries
+      throw err;
+    });
+  }
   return parksIndexPromise;
 }
 
