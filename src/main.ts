@@ -23,7 +23,7 @@ for (const t of FIELD_TYPES) {
   o.textContent = t;
   fieldTypeSelect.appendChild(o);
 }
-fieldTypeSelect.value = 'Baseball - Adult';
+fieldTypeSelect.value = 'Baseball - Adults';
 
 const today = new Date();
 const weekOut = new Date(today);

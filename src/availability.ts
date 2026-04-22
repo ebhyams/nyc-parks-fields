@@ -2,6 +2,11 @@ import { OPEN_HOUR, CLOSE_HOUR, BOROUGH_NAMES } from './constants';
 import { parseDateTime } from './datetime';
 import type { ParkPermits, DayAvailability, SlotRow } from './types';
 
+// Normalize sport strings for comparison: lowercase, collapse spaces, unify dashes.
+// Handles "Soccer -Regulation", em dashes, etc.
+const normSport = (s: string) =>
+  s.toLowerCase().replace(/[–—]/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim();
+
 interface DayMeta {
   key: string;   // "YYYY-MM-DD" in local time
   label: string;
@@ -49,8 +54,9 @@ export function computeAvailability(
       if (!field || !s || !e) continue;
       // Track the field/sport regardless of status so it appears in the pool.
       allFields.add(field);
-      if (!fieldsBySport.has(sport)) fieldsBySport.set(sport, new Set());
-      fieldsBySport.get(sport)!.add(field);
+      const ns = normSport(sport);
+      if (!fieldsBySport.has(ns)) fieldsBySport.set(ns, new Set());
+      fieldsBySport.get(ns)!.add(field);
       // Only cancelled/denied/withdrawn permits don't block the slot.
       if (/cancel|denied|withdraw/i.test(status)) continue;
       permitIntervals.push({ field, start: s, end: e });
@@ -58,7 +64,7 @@ export function computeAvailability(
 
     const fieldsOfType = allSports
       ? allFields
-      : (fieldsBySport.get(fieldTypeFilter) ?? new Set<string>());
+      : (fieldsBySport.get(normSport(fieldTypeFilter)) ?? new Set<string>());
     if (fieldsOfType.size === 0) continue;
 
     for (const day of days) {
