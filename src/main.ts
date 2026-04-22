@@ -143,7 +143,7 @@ async function runSearch(): Promise<void> {
     }, 0);
     setStatus(
       `${parks.length} parks queried · ${withFieldType} with ${fieldType} fields · ` +
-      `${empty} with no ${fieldType} fields · ${errors} errors · ${startStr} → ${endStr}`,
+      `${empty} with no ${fieldType} fields`,
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
