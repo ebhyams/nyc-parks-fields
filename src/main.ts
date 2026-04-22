@@ -4,7 +4,7 @@ import { fetchSocrata } from './socrata';
 import { fetchPermitsCsv } from './permits';
 import { pool } from './pool';
 import { computeAvailability } from './availability';
-import { renderResults, setStatus, escapeHtml } from './render';
+import { renderResults, renderCollapsedResults, setStatus, escapeHtml } from './render';
 import type { Park, ParkPermits } from './types';
 
 // --- DOM refs ---
@@ -15,6 +15,9 @@ const searchBtn = document.getElementById('searchBtn') as HTMLButtonElement;
 const startDateInput = document.getElementById('startDate') as HTMLInputElement;
 const endDateInput = document.getElementById('endDate') as HTMLInputElement;
 const filtersForm = document.getElementById('filters') as HTMLFormElement;
+const tabBar = document.getElementById('tab-bar') as HTMLElement;
+const resultsAll = document.getElementById('results-all') as HTMLElement;
+const resultsCollapsed = document.getElementById('results-collapsed') as HTMLElement;
 
 // --- Bootstrap ---
 for (const t of FIELD_TYPES) {
@@ -37,6 +40,17 @@ boroughSelect.addEventListener('change', () => {
 });
 
 filtersForm.addEventListener('submit', e => { e.preventDefault(); runSearch(); });
+
+// --- Tab switching ---
+tabBar.addEventListener('click', e => {
+  const btn = (e.target as Element).closest('.tab-btn') as HTMLButtonElement | null;
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  tabBar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  resultsAll.hidden = tab !== 'all';
+  resultsCollapsed.hidden = tab !== 'collapsed';
+});
 
 setStatus('Select a borough and hit Search.');
 
@@ -71,7 +85,9 @@ async function runSearch(): Promise<void> {
     return;
   }
 
-  document.getElementById('results')!.innerHTML = '';
+  resultsAll.innerHTML = '';
+  resultsCollapsed.innerHTML = '';
+  tabBar.hidden = true;
   searchBtn.disabled = true;
   searchBtn.textContent = 'Loading…';
 
@@ -112,6 +128,15 @@ async function runSearch(): Promise<void> {
     );
     const availability = computeAvailability(withData, start, end, fieldType);
     renderResults(availability);
+    renderCollapsedResults(availability);
+
+    // Show tab bar and reset to "All fields" tab
+    tabBar.hidden = false;
+    tabBar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    (tabBar.querySelector('[data-tab="all"]') as HTMLButtonElement).classList.add('active');
+    resultsAll.hidden = false;
+    resultsCollapsed.hidden = true;
+
     setStatus(
       `${parks.length} parks queried · ${withData.length} with permit data · ` +
       `${empty} empty · ${errors} errors · ${fieldType} · ${startStr} → ${endStr}`,
