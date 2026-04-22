@@ -137,9 +137,13 @@ async function runSearch(): Promise<void> {
     resultsAll.hidden = false;
     resultsCollapsed.hidden = true;
 
+    const withFieldType = availability.reduce((n, d) => {
+      const parks = new Set(d.rows.map(r => r.park));
+      return n + parks.size;
+    }, 0);
     setStatus(
-      `${parks.length} parks queried · ${withData.length} with permit data · ` +
-      `${empty} empty · ${errors} errors · ${fieldType} · ${startStr} → ${endStr}`,
+      `${parks.length} parks queried · ${withFieldType} with ${fieldType} fields · ` +
+      `${empty} no permit data · ${errors} errors · ${startStr} → ${endStr}`,
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
