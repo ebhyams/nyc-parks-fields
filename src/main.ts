@@ -141,9 +141,11 @@ async function runSearch(): Promise<void> {
       const parks = new Set(d.rows.map(r => r.park));
       return n + parks.size;
     }, 0);
+    const allTypes = fieldType === 'All fields and courts';
     setStatus(
-      `${parks.length} parks queried · ${withFieldType} with ${fieldType} fields · ` +
-      `${empty} with no ${fieldType} fields`,
+      allTypes
+        ? `${parks.length} parks queried · ${withFieldType} parks · ${empty} parks with no permit history`
+        : `${parks.length} parks queried · ${withFieldType} with ${fieldType} fields · ${empty} with no ${fieldType} fields`,
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
