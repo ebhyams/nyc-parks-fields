@@ -43,4 +43,4 @@ export const SOCRATA_BASE_URL =
   "https://data.cityofnewyork.us/resource/c5vm-g2dk.json";
 
 export const csvUrl = (code: string) =>
-  `https://www.nycgovparks.org/permits/field-and-court/issued/${encodeURIComponent(code)}/csv`;
+  `https://corsproxy.io/?url=${encodeURIComponent(`https://www.nycgovparks.org/permits/field-and-court/issued/${code}/csv`)}`;
