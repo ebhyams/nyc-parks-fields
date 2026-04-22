@@ -40,7 +40,7 @@ The Cloudflare Worker is deployed separately via Wrangler (`cd worker && wrangle
 - **"All boroughs" is slow and heavy**: Fetches ~1,200 permit files throttled to 8 at a time. Expect 1–3 minutes on a cold search, with real load on the NYC Parks server.
 - **Results can be up to 10 minutes stale**: Permit CSVs are cached in the browser for 10 minutes.
 - **Issued permits only**: Informal use, maintenance closures, and reservation holds aren't reflected.
-- **Operating hours fixed at 6 AM–11 PM**: Actual park hours vary by location.
+- **Operating hours fixed at 6 AM–11 PM**: Actual park hours could vary, could change seasonally. Not all slots are necessarily bookable.
 - **Field type inflexibility**: Field types are based on a static list, could break or miss data if new field types are added.
 
 ## If this were a real production app
