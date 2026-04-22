@@ -41,6 +41,7 @@ The Cloudflare Worker is deployed separately via Wrangler (`cd worker && wrangle
 - **Results can be up to 10 minutes stale**: Permit CSVs are cached in the browser for 10 minutes.
 - **Issued permits only**: Informal use, maintenance closures, and reservation holds aren't reflected.
 - **Operating hours fixed at 6 AM–11 PM**: Actual park hours vary by location.
+- **Field type inflexibility**: Field types are based on a static list, could break or miss data if new field types are added.
 
 ## If this were a real production app
 
